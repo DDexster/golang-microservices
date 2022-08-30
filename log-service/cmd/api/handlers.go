@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"log/data"
 	"net/http"
 )
@@ -19,6 +20,7 @@ func (app *Config) Log(w http.ResponseWriter, r *http.Request) {
 		Data: requestPayload.Data,
 	}
 
+	log.Printf("Saving log entry with name: %s, and data: %s", event.Name, event.Data)
 	err := app.Models.LogEntry.Insert(event)
 	if err != nil {
 		app.errJSON(w, err)
