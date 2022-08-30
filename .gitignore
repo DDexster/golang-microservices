@@ -1,1 +1,6 @@
 .idea
+/auth-service/authApp
+/broker-service/brokerApp
+/front-end/frontApp
+/log-service/logsApp
+/db-data/mongo/*

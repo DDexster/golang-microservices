@@ -19,12 +19,23 @@ services:
       dockerfile: ./auth-service.dockerfile
     restart: always
     ports:
-      - "5000:8080"
+      - "6000:8080"
     deploy:
       mode: replicated
       replicas: 1
     environment:
       DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
+
+  log-service:
+    build:
+      context: ./log-service
+      dockerfile: ./log-service.dockerfile
+    restart: always
+    ports:
+      - "5000:8080"
+    deploy:
+      mode: replicated
+      replicas: 1
 
   postgres:
     image: 'postgres:14.2'
@@ -40,3 +51,17 @@ services:
       POSTGRES_DB: users
     volumes:
       - ./db-data/postgres/:/var/lib/postgresql/data/
+
+  mongo:
+    image: 'mongo:4.2.16-bionic'
+    ports:
+      - "27018:27017"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - ./db-data/mongo/:/data/db
