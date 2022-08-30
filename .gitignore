@@ -3,4 +3,5 @@
 /broker-service/brokerApp
 /front-end/frontApp
 /log-service/logsApp
+/mail-service/mailApp
 /db-data/mongo/*

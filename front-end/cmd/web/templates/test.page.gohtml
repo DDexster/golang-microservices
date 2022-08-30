@@ -9,6 +9,7 @@
         <a href="javascript:void(0);" id="broker-btn" class="btn btn-outline-secondary">Test Broker</a>
         <a href="javascript:void(0);" id="auth-broker-btn" class="btn btn-outline-secondary">Test Broker Auth</a>
         <a href="javascript:void(0);" id="log-broker-btn" class="btn btn-outline-secondary">Test Broker Log</a>
+        <a href="javascript:void(0);" id="mail-broker-btn" class="btn btn-outline-secondary">Test Broker Mail</a>
         <div id="output" class="mt-5" style="outline: 1px solid silver; padding: 2em;">
           <span class="text-muted">Output shows here...</span>
         </div>
@@ -33,12 +34,39 @@
 
 {{define "js"}}
   <script>
-    const brokerBtn = document.getElementById("broker-btn")
-    const authBrokerBtn = document.getElementById("auth-broker-btn")
-    const logBrokerBtn = document.getElementById("log-broker-btn")
-    const output = document.getElementById("output")
-    const sent = document.getElementById("payload")
-    const received = document.getElementById("received")
+    const brokerBtn = document.getElementById("broker-btn");
+    const authBrokerBtn = document.getElementById("auth-broker-btn");
+    const logBrokerBtn = document.getElementById("log-broker-btn");
+    const mailBrokerBtn = document.getElementById("mail-broker-btn");
+    const output = document.getElementById("output");
+    const sent = document.getElementById("payload");
+    const received = document.getElementById("received");
+
+    function postHandler(payload) {
+      const headers = new Headers()
+      headers.append("Content-Type", "application/json")
+      const body = {
+        headers,
+        method: "POST",
+        body: JSON.stringify(payload)
+      }
+
+      fetch("http:\/\/localhost:4000/handle", body)
+        .then(res => res.json())
+        .then(data => {
+          sent.innerHTML = JSON.stringify(payload, undefined, 2);
+          received.innerHTML = JSON.stringify(data, undefined, 4);
+          if (data.error) {
+            output.innerHTML += `<br><strong>Error</strong>: ${data.message}`;
+          } else {
+            output.innerHTML += `<br><strong>Response from broker service</strong>: ${data.message}`;
+          }
+        })
+        .catch(e => {
+          output.innerHTML += `<br><br><strong>Error:</strong>: ${e}`;
+        })
+    }
+
     if (brokerBtn) {
       brokerBtn.addEventListener("click", (e) => {
         e.preventDefault()
@@ -71,27 +99,7 @@
             password: "verysecret"
           }
         }
-        const headers = new Headers()
-        headers.append("Content-Type", "application/json")
-        const body = {
-          headers,
-          method: "POST",
-          body: JSON.stringify(payload)
-        }
-        fetch("http:\/\/localhost:4000/handle", body)
-          .then(res => res.json())
-          .then(data => {
-            sent.innerHTML = JSON.stringify(payload, undefined, 2);
-            received.innerHTML = JSON.stringify(data, undefined, 4);
-            if (data.error) {
-              output.innerHTML += `<br><strong>Error</strong>: ${data.message}`;
-            } else {
-              output.innerHTML += `<br><strong>Response from broker service</strong>: ${data.message}`;
-            }
-          })
-          .catch(e => {
-            output.innerHTML += `<br><br><strong>Error:</strong>: ${e}`;
-          })
+        postHandler(payload);
       })
     }
     if (logBrokerBtn) {
@@ -104,27 +112,22 @@
             data: "verysecret log to save"
           }
         }
-        const headers = new Headers()
-        headers.append("Content-Type", "application/json")
-        const body = {
-          headers,
-          method: "POST",
-          body: JSON.stringify(payload)
+        postHandler(payload);
+      })
+    }
+    if (mailBrokerBtn) {
+      mailBrokerBtn.addEventListener("click", (e) => {
+        e.preventDefault()
+        const payload = {
+          action: "mail",
+          mail: {
+            from: "me@email.com",
+            to: "you@email.com",
+            subject: "Broker Mail Test!",
+            message: "Soooo! I've just sent you an email via microservice broker, and also logged your action to MongoDB, motherfucker! I'm watching you, bitch!"
+          }
         }
-        fetch("http:\/\/localhost:4000/handle", body)
-          .then(res => res.json())
-          .then(data => {
-            sent.innerHTML = JSON.stringify(payload, undefined, 2);
-            received.innerHTML = JSON.stringify(data, undefined, 4);
-            if (data.error) {
-              output.innerHTML += `<br><strong>Error</strong>: ${data.message}`;
-            } else {
-              output.innerHTML += `<br><strong>Response from broker service</strong>: ${data.message}`;
-            }
-          })
-          .catch(e => {
-            output.innerHTML += `<br><br><strong>Error:</strong>: ${e}`;
-          })
+        postHandler(payload);
       })
     }
   </script>
