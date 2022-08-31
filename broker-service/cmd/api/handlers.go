@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/rpc"
 )
 
 type AuthPayload struct {
@@ -55,7 +56,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	case "auth":
 		app.Authenticate(w, request.Auth)
 	case "log":
-		app.MakeLogQueueEvent(w, request.Log)
+		app.MakeRPCLog(w, request.Log)
 	case "mail":
 		app.SendMail(w, request.Mail)
 	default:
@@ -236,4 +237,38 @@ func (app *Config) pushToQueue(name, message string) error {
 	}
 
 	return nil
+}
+
+type RPCPayload struct {
+	Name string
+	Data string
+}
+
+func (app *Config) MakeRPCLog(w http.ResponseWriter, l LogPayload) {
+	client, err := rpc.Dial("tcp", "log-service:5001")
+	if err != nil {
+		app.errJSON(w, err)
+		return
+	}
+
+	payload := RPCPayload{
+		Name: l.Name,
+		Data: l.Data,
+	}
+
+	var result string
+
+	err = client.Call("RPCServer.LogInfo", payload, &result)
+
+	if err != nil {
+		app.errJSON(w, err)
+		return
+	}
+
+	response := jsonResponse{
+		Error:   false,
+		Message: result,
+	}
+
+	app.writeJSON(w, http.StatusAccepted, response)
 }
