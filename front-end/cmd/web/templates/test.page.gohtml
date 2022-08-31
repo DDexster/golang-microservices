@@ -10,6 +10,7 @@
         <a href="javascript:void(0);" id="auth-broker-btn" class="btn btn-outline-secondary">Test Broker Auth</a>
         <a href="javascript:void(0);" id="log-broker-btn" class="btn btn-outline-secondary">Test Broker Log</a>
         <a href="javascript:void(0);" id="mail-broker-btn" class="btn btn-outline-secondary">Test Broker Mail</a>
+        <a href="javascript:void(0);" id="grpc-broker-btn" class="btn btn-outline-secondary">Test gRPC Log</a>
         <div id="output" class="mt-5" style="outline: 1px solid silver; padding: 2em;">
           <span class="text-muted">Output shows here...</span>
         </div>
@@ -37,12 +38,13 @@
     const brokerBtn = document.getElementById("broker-btn");
     const authBrokerBtn = document.getElementById("auth-broker-btn");
     const logBrokerBtn = document.getElementById("log-broker-btn");
+    const logGRPCBtn = document.getElementById("grpc-broker-btn");
     const mailBrokerBtn = document.getElementById("mail-broker-btn");
     const output = document.getElementById("output");
     const sent = document.getElementById("payload");
     const received = document.getElementById("received");
 
-    function postHandler(payload) {
+    function postHandler(payload, endPoint = "handle") {
       const headers = new Headers()
       headers.append("Content-Type", "application/json")
       const body = {
@@ -51,7 +53,7 @@
         body: JSON.stringify(payload)
       }
 
-      fetch("http:\/\/localhost:4000/handle", body)
+      fetch(`http:\/\/localhost:4000/${endPoint}`, body)
         .then(res => res.json())
         .then(data => {
           sent.innerHTML = JSON.stringify(payload, undefined, 2);
@@ -113,6 +115,19 @@
           }
         }
         postHandler(payload);
+      })
+    }
+    if (logGRPCBtn) {
+      logGRPCBtn.addEventListener("click", (e) => {
+        e.preventDefault()
+        const payload = {
+          action: "log",
+          log: {
+            name: "grpc log",
+            data: "that's kind of pain in the ass)"
+          }
+        }
+        postHandler(payload, 'log-grpc');
       })
     }
     if (mailBrokerBtn) {
