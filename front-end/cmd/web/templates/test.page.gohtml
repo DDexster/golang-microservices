@@ -43,6 +43,7 @@
     const output = document.getElementById("output");
     const sent = document.getElementById("payload");
     const received = document.getElementById("received");
+    const brokerURL = "{{.BrokerURL}}";
 
     function postHandler(payload, endPoint = "handle") {
       const headers = new Headers()
@@ -53,7 +54,7 @@
         body: JSON.stringify(payload)
       }
 
-      fetch(`http:\/\/localhost:4000/${endPoint}`, body)
+      fetch(`${brokerURL}/${endPoint}`, body)
         .then(res => res.json())
         .then(data => {
           sent.innerHTML = JSON.stringify(payload, undefined, 2);
@@ -75,7 +76,7 @@
         const body = {
           method: "POST"
         }
-        fetch("http:\/\/localhost:4000", body)
+        fetch(`${brokerURL}`, body)
           .then(res => res.json())
           .then(data => {
             sent.innerHTML = "empty post request";

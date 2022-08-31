@@ -2,6 +2,7 @@
 /auth-service/authApp
 /broker-service/brokerApp
 /front-end/frontApp
+/front-end/frontendApp
 /log-service/logsApp
 /mail-service/mailApp
 /listener-service/listenerApp

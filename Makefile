@@ -4,12 +4,36 @@ AUTH_BINARY=authApp
 LOGS_BINARY=logsApp
 MAIL_BINARY=mailApp
 LISTENER_BINARY=listenerApp
+FRONT_BINARY=frontendApp
 
 ## up: starts all containers in the background without forcing build
 up:
 	@echo "Starting Docker images..."
 	docker-compose up -d
 	@echo "Docker images started!"
+
+## build_all: build all binaries
+build_all: build_broker build_auth build_logs build_mail build_listener build_front_swarm
+
+## docker_update build all binaries, rebuild all docker files and push them to registry
+docker_update: build_all
+	@echo "Building docker images..."
+	docker build -f front-end/front-end.dockerfile -t dmbondarenko/udemy-front-microservice ./front-end
+	docker build -f auth-service/auth-service.dockerfile -t dmbondarenko/udemy-auth-microservice ./auth-service
+	docker build -f listener-service/listener-service.dockerfile -t dmbondarenko/udemy-listener-microservice ./listener-service
+	docker build -f broker-service/broker-service.dockerfile -t dmbondarenko/udemy-broker-microservice ./broker-service
+	docker build -f log-service/log-service.dockerfile -t dmbondarenko/udemy-logs-microservice ./log-service
+	docker build -f mail-service/mail-service.dockerfile -t dmbondarenko/udemy-mail-microservice ./mail-service
+	docker build -f caddy/caddy.dockerfile -t dmbondarenko/udemy-caddy-microservice ./caddy
+	@echo "Pushing docker images to registry..."
+	docker push dmbondarenko/udemy-front-microservice
+	docker push dmbondarenko/udemy-auth-microservice
+	docker push dmbondarenko/udemy-listener-microservice
+	docker push dmbondarenko/udemy-broker-microservice
+	docker push dmbondarenko/udemy-logs-microservice
+	docker push dmbondarenko/udemy-mail-microservice
+	docker push dmbondarenko/udemy-caddy-microservice
+	@echo "Docker images built and updated!"
 
 ## up_build: stops docker-compose (if running), builds all projects and starts docker compose
 up_build: build_broker build_auth build_logs build_mail build_listener
@@ -61,6 +85,12 @@ build_mail:
 build_listener:
 	@echo "Building listener service binary..."
 	cd ./listener-service && env GOOS=linux CGO_ENABLED=0 go build -o ${LISTENER_BINARY} .
+	@echo "Done!"
+
+## build_front: builds the front-end binary
+build_front_swarm:
+	@echo "Building front end binary..."
+	cd ./front-end && env CGO_ENABLED=0 go build -o ${FRONT_BINARY} ./cmd/web
 	@echo "Done!"
 
 ## build_front: builds the front-end binary

@@ -1,33 +1,40 @@
 version: '3'
 
 services:
-  front-end:
-    build:
-      context: ./front-end
-      dockerfile: ./front-end.dockerfile
+  caddy:
+    image: 'dmbondarenko/udemy-caddy-microservice'
+    deploy:
+      mode: replicated
+      replicas: 1
     ports:
-      - "8081:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+  front-end:
+    image: 'dmbondarenko/udemy-front-microservice'
+    deploy:
+      mode: replicated
+      replicas: 1
     environment:
-      BROKER_URL: "http://broker-service"
+      BROKER_URL: "http://backend"
 
   broker-service:
-    build:
-      context: ./broker-service
-      dockerfile: ./broker-service.dockerfile
-    restart: always
-#    ports:
-#      - "4000:8080"
+    image: 'dmbondarenko/udemy-broker-microservice'
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  listener-service:
+    image: 'dmbondarenko/udemy-listener-microservice'
     deploy:
       mode: replicated
       replicas: 1
 
   auth-service:
-    build:
-      context: ./auth-service
-      dockerfile: ./auth-service.dockerfile
-    restart: always
-#    ports:
-#      - "6000:8080"
+    image: 'dmbondarenko/udemy-listener-microservice'
     deploy:
       mode: replicated
       replicas: 1
@@ -35,23 +42,13 @@ services:
       DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
 
   log-service:
-    build:
-      context: ./log-service
-      dockerfile: ./log-service.dockerfile
-    restart: always
-#    ports:
-#      - "5000:8080"
+    image: 'dmbondarenko/udemy-logs-microservice'
     deploy:
       mode: replicated
       replicas: 1
 
   mail-service:
-    build:
-      context: ./mail-service
-      dockerfile: ./mail-service.dockerfile
-    restart: always
-#    ports:
-#      - "7000:8080"
+    image: 'dmbondarenko/udemy-mail-microservice'
     deploy:
       mode: replicated
       replicas: 1
@@ -65,23 +62,12 @@ services:
       MAIL_FROM_NAME: "Dex Bond"
       MAIL_FROM_ADDRESS: "dima@cabdo.de"
 
-  listener-service:
-    build:
-      context: ./listener-service
-      dockerfile: ./listener-service.dockerfile
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 1
-
   postgres:
     image: 'postgres:14.2'
     ports:
-      - "5437:5432"
-    restart: always
+      - "5432:5432"
     deploy:
-      mode: replicated
-      replicas: 1
+      mode: global
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -92,10 +78,9 @@ services:
   mongo:
     image: 'mongo:4.2.16-bionic'
     ports:
-      - "27018:27017"
+      - "27017:27017"
     deploy:
-      mode: replicated
-      replicas: 1
+      mode: global
     environment:
       MONGO_INITDB_DATABASE: logs
       MONGO_INITDB_ROOT_USERNAME: admin
@@ -108,13 +93,19 @@ services:
     ports:
       - "5672:5672"
     deploy:
-      mode: replicated
-      replicas: 1
-    volumes:
-      - ./db-data/rabbitmq/:/var/lib/rabbitmq/
+      mode: global
 
   mailhog:
     image: 'mailhog/mailhog:latest'
     ports:
       - "1025:1025"
       - "8025:8025"
+    deploy:
+      mode: global
+
+
+volumes:
+  caddy_data:
+    external: true
+  caddy_config:
+    external: true
