@@ -4,4 +4,6 @@
 /front-end/frontApp
 /log-service/logsApp
 /mail-service/mailApp
+/listener-service/listenerApp
 /db-data/mongo/*
+/db-data/rabbitmq/*

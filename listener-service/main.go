@@ -3,48 +3,35 @@ package main
 import (
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"listener/event"
 	"log"
 	"math"
-	"net/http"
 	"os"
 	"time"
 )
 
-const webPort = "8080"
-
-type Config struct {
-	Rabbit *amqp.Connection
-}
-
 func main() {
-
 	//	connect to rabbitmq
-	rabbitConn, err := connectToRabbitMQ()
+	rabbitConn, err := connect()
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
 	defer rabbitConn.Close()
 
-	app := Config{
-		Rabbit: rabbitConn,
-	}
-
-	log.Printf("Starting brocker on port %s\n", webPort)
-
-	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%s", webPort),
-		Handler: app.routes(),
-	}
-
-	err = srv.ListenAndServe()
-
+	//	start listening for messages
+	//	create consumer
+	log.Println("Listening and consuming RMQ messages")
+	consumer, err := event.NewConsumer(rabbitConn)
 	if err != nil {
 		log.Panic(err)
 	}
+
+	//	watch the queue and consume events
+	err = consumer.Listen([]string{"log.INFO", "log.WARNING", "log.ERROR"})
 }
 
-func connectToRabbitMQ() (*amqp.Connection, error) {
+func connect() (*amqp.Connection, error) {
 	var counts int64
 	var backOff = 1 * time.Second
 	var connection *amqp.Connection
