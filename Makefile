@@ -36,7 +36,7 @@ docker_update: build_all
 	@echo "Docker images built and updated!"
 
 ## up_build: stops docker-compose (if running), builds all projects and starts docker compose
-up_build: build_broker build_auth build_logs build_mail build_listener
+up_build: build_broker build_auth build_logs build_mail build_listener build_front_swarm
 	@echo "Stopping docker images (if running...)"
 	docker-compose down
 	@echo "Building (when required) and starting docker images..."
@@ -44,7 +44,7 @@ up_build: build_broker build_auth build_logs build_mail build_listener
 	@echo "Docker images built and started!"
 
 ## up_build_dev: stops docker-compose (if running), builds all projects and starts docker compose not in -d mode
-up_build_dev: build_broker build_auth build_logs build_mail build_listener
+up_build_dev: build_broker build_auth build_logs build_mail build_listener build_front_swarm
 	@echo "Stopping docker images (if running...)"
 	docker-compose down
 	@echo "Building (when required) and starting docker images..."

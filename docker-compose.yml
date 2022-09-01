@@ -1,33 +1,51 @@
 version: '3'
 
 services:
+  caddy:
+    #    image: 'dmbondarenko/udemy-caddy-microservice'
+    build:
+      context: ./caddy
+      dockerfile: ./caddy.dockerfile
+    deploy:
+      mode: replicated
+      replicas: 1
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy_data:/data
+      - ./caddy_config:/config
+
   front-end:
+    #    image: 'dmbondarenko/udemy-front-microservice'
     build:
       context: ./front-end
       dockerfile: ./front-end.dockerfile
-    ports:
-      - "8081:80"
+    #    ports:
+    #      - "80:8081"
     environment:
-      BROKER_URL: "http://broker-service"
+      BROKER_URL: "http://backend"
 
   broker-service:
+    #    image: 'dmbondarenko/udemy-broker-microservice'
     build:
       context: ./broker-service
       dockerfile: ./broker-service.dockerfile
     restart: always
-#    ports:
-#      - "4000:8080"
+    #    ports:
+    #      - "4000:8080"
     deploy:
       mode: replicated
       replicas: 1
 
   auth-service:
+    #    image: 'dmbondarenko/udemy-listener-microservice'
     build:
       context: ./auth-service
       dockerfile: ./auth-service.dockerfile
     restart: always
-#    ports:
-#      - "6000:8080"
+    #    ports:
+    #      - "6000:8080"
     deploy:
       mode: replicated
       replicas: 1
@@ -35,23 +53,25 @@ services:
       DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
 
   log-service:
+    #    image: 'dmbondarenko/udemy-logs-microservice'
     build:
       context: ./log-service
       dockerfile: ./log-service.dockerfile
     restart: always
-#    ports:
-#      - "5000:8080"
+    #    ports:
+    #      - "5000:8080"
     deploy:
       mode: replicated
       replicas: 1
 
   mail-service:
+    #    image: 'dmbondarenko/udemy-mail-microservice'
     build:
       context: ./mail-service
       dockerfile: ./mail-service.dockerfile
     restart: always
-#    ports:
-#      - "7000:8080"
+    #    ports:
+    #      - "7000:8080"
     deploy:
       mode: replicated
       replicas: 1
@@ -66,6 +86,7 @@ services:
       MAIL_FROM_ADDRESS: "dima@cabdo.de"
 
   listener-service:
+    #    image: 'dmbondarenko/udemy-listener-microservice'
     build:
       context: ./listener-service
       dockerfile: ./listener-service.dockerfile
