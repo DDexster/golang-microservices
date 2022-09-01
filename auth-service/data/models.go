@@ -43,6 +43,38 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+func (u *User) IsAdminExist() (bool, error) {
+
+	_, err := u.GetByEmail("admin@example.com")
+	if err != nil {
+		log.Println("Error checking admin", err)
+		return false, err
+	}
+	log.Println("Admin item exists")
+	return true, nil
+}
+
+func (u *User) GenerateAdminUser() error {
+	log.Println("Generating Admin user....")
+	user := User{
+		Email:     "admin@example.com",
+		FirstName: "Admin",
+		LastName:  "User",
+		Password:  "verysecret",
+		Active:    1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, err := u.Insert(user)
+	if err != nil {
+		log.Println("Admin user generate error", err)
+		return err
+	}
+	log.Println("Admin user generated successfully....")
+	return nil
+}
+
 // GetAll returns a slice of all users, sorted by last name
 func (u *User) GetAll() ([]*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)

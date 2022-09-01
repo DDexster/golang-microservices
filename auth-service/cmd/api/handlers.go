@@ -20,6 +20,17 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//check if admin exist and generate one if not
+	exists, _ := app.Models.User.IsAdminExist()
+
+	if !exists {
+		err = app.Models.User.GenerateAdminUser()
+		if err != nil {
+			app.errJSON(w, err, http.StatusInternalServerError)
+			return
+		}
+	}
+
 	//	validate user
 	user, err := app.Models.User.GetByEmail(payload.Email)
 	if err != nil {
@@ -29,7 +40,7 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 	valid, err := user.PasswordMatches(payload.Password)
 	if err != nil || !valid {
-		app.errJSON(w, errors.New("invalid Credentials"), http.StatusUnauthorized)
+		app.errJSON(w, errors.New("invalid password"), http.StatusUnauthorized)
 		return
 	}
 
